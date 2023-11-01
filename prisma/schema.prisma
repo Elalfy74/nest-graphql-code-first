@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator nestgraphql {
+  provider             = "prisma-nestjs-graphql"
+  output               = "../src/@generated"
+  reExport             = Directories
+  decorate_3_type      = "UserCreateNested*Without*Input"
+  decorate_3_field     = "!(connect)"
+  decorate_3_name      = "HideField"
+  decorate_3_from      = "@nestjs/graphql"
+  decorate_3_arguments = "[]"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id       String @id @default(uuid())
+  username String @unique
+  password String
+
+  posts    Post[]
+  comments Comment[]
+
+  @@map("users")
+}
+
+model Post {
+  id     String @id @default(uuid())
+  body   String
+  userId String
+
+  user     User      @relation(fields: [userId], references: [id])
+  comments Comment[]
+
+  @@map("posts")
+}
+
+model Comment {
+  id   String @id @default(uuid())
+  body String
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  post   Post   @relation(fields: [postId], references: [id])
+  postId String
+
+  @@map("comments")
+}
